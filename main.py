@@ -5,9 +5,11 @@ class PokeSpider(scrapy.Spider):
     start_urls = ['https://pokemondb.net/pokedex/all']
 
     def parse(self, response):
-        linha = response.css('table#pokedex > tbody > tr:first-child')
-        link = linha.css("td:nth-child(2) > a::attr(href)")
-        yield response.follow(link.get(), self.parser_pokemon)
+        linhas = response.css('table#pokedex > tbody > tr')
+        
+        for linha in linhas:
+            link = linha.css("td:nth-child(2) > a::attr(href)")
+            yield response.follow(link.get(), self.parser_pokemon)
 
     def parser_pokemon(self, response):
         nome = response.css('h1::text').get()
