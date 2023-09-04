@@ -1,14 +1,5 @@
 import scrapy
 
-# Exercício:
-# Buscar:
-# Nome, ID, Tamanho e Peso
-# Alguns dados estão dentro da página do Pokemon
-# Página do Pokémon deve usar o parser "parser_pokemon"
-
-# Dica: Principais CSS Selectors:
-# https://www.w3schools.com/cssref/css_selectors.php
-
 class PokeSpider(scrapy.Spider):
     name = 'pokespider'
     start_urls = ['https://pokemondb.net/pokedex/all']
@@ -39,7 +30,13 @@ class PokeSpider(scrapy.Spider):
                 "id_evolucao": id_evolucao,
                 "url_evolucao": url_evolucao_completinha
             })
-          
+
+        habilidades_links = response.css('table.vitals-table tbody tr:nth-child(6) td a::attr(href)').getall()
+
+        for habilidade_link in habilidades_links:
+            habilidade_url_completa = f'https://pokemondb.net{habilidade_link}'
+            yield response.follow(habilidade_url_completa, self.parse_habilidade)
+        
         yield {
             "nome": nome,
             "id": id,
@@ -50,39 +47,17 @@ class PokeSpider(scrapy.Spider):
             "evolucoes": evolucoes,
         }
 
+    def parse_habilidade(self, response):
+        habilidade_nome = response.css('h1::text').get()
+        
+        habilidade_descricao = ' '.join(response.css('#main > div.grid-row > div:nth-child(1) > p *::text').getall())
+        
+        habilidade_descricao = ' '.join(habilidade_descricao.split())
+        
+        habilidade_url = response.url
 
-
-
-#yield {"nome": nome.get()}
-
-
-# class PokeSpider(scrapy.Spider):
-#   name = 'pokespider'
-#   start_urls = ['https://pokemondb.net/pokedex/all']
-
-#   def parse(self, response):
-#     ### tabela de seletores de CSS
-#     tabela_pokedex = "table#pokedex > tbody > tr"
-
-#     linhas = response.css(tabela_pokedex)
-
-#     # Processa uma linha apenas
-#     linha = linhas[0]
-#     coluna_href = linha.css("td:nth-child(2) > a::attr(href)")
-#     yield response.follow(coluna_href.get(), self.parser_pokemon)
-
-#     # Processa todas as linhas
-#     for linha in linhas:
-#       # coluna_nome = linha.css("td:nth-child(2) > a::text")
-#       # coluna_id = linha.css("td:nth-child(1) > span.infocard-cell-data::text")
-#       #yield {'id': coluna_id.get(),'nome': coluna_nome.get()}
-
-#       coluna_href = linha.css("td:nth-child(2) > a::attr(href)")
-#       yield response.follow(coluna_href.get(), self.parser_pokemon)
-
-#   def parser_pokemon(self, response):
-#     id_selector = "table.vitals-table > tbody > tr:nth-child(1) > td > strong::text"
-    
-#     id = response.css(id_selector)
-#     yield {'id': id.get()}
-    
+        yield {
+            "nome_habilidade": habilidade_nome,
+            "descricao": habilidade_descricao.strip(),
+            "url_habilidade": habilidade_url
+        }
