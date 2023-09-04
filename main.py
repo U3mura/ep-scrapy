@@ -62,3 +62,4 @@ class PokeSpider(scrapy.Spider):
             "descricao": habilidade_descricao.strip(),
             "url_habilidade": habilidade_url
         }
+      
