@@ -16,6 +16,7 @@ class PokeSpider(scrapy.Spider):
         peso = response.css('table.vitals-table > tbody > tr:nth-child(5) > td::text').get()
         url_pokemon = response.url
         tipos = response.css('table.vitals-table tbody tr:nth-child(2) td a::text').getall()[:2]
+        
         evolucoes = []
         evolucoes_possiveis = response.css('#main div.infocard-list-evo div span.infocard-lg-data.text-muted')
         
